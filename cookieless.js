@@ -13,6 +13,7 @@ async function generateToken() {
         fonts: availableFonts
     };
     const payload = JSON.stringify(payloadJSON);
+    document.getElementById("data").innerText = payload;
     return await sha256(payload);
 }
 
@@ -248,7 +249,7 @@ async function getMetadata() {
     }
     metadata.colorGamut = fetchColorGamut();
     // Screen resolution
-    metadata.screenResolution = window.screen.width + "x" + window.screen.height;
+    // metadata.screenResolution = window.screen.width + "x" + window.screen.height;
     // Touch support
     function fetchMaxTouchPoints() {
         let touchPoints = 0;
