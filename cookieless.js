@@ -5,13 +5,14 @@ async function generateToken() {
     const metadata = await getMetadata();
     const audioFingerprint = await getAudioFingerprint();
     const availableFonts = await getFontMetadata();
-    const payload = JSON.stringify({
+    const payloadJSON = {
         canvasFingerprint: canvasFingerprint,
         webglFingerprint: webglFingerprint,
         metadata: metadata,
         audioFingerprint: audioFingerprint,
         fonts: availableFonts
-    });
+    };
+    const payload = JSON.stringify(payloadJSON);
     return await sha256(payload);
 }
 
