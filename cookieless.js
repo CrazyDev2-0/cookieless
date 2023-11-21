@@ -135,8 +135,14 @@ async function getWebGLFingerprint() {
     gl = canvasElement.getContext("webgl") || canvasElement.getContext("experimental-webgl");
 
     if (!gl) {
-        return null;
+        return {};
     }
+
+    let webglExtensions = [];
+    try{
+        webglExtensions = gl.getSupportedExtensions();
+    } catch {}
+
     gl.viewport(0, 0, gl.drawingBufferWidth, gl.drawingBufferHeight);
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
     gl.clear(gl.COLOR_BUFFER_BIT);
@@ -194,7 +200,17 @@ async function getWebGLFingerprint() {
         gl.deleteProgram(program);
     }
 
-    return dataURL;
+    let metadata = {};
+    for (let key in gl) {
+        if (typeof gl[key] === 'number') { // WebGL constants are numbers
+            metadata[key] = gl[key];
+        }
+    }
+    return {
+        "data": dataURL,
+        "extensions": webglExtensions,
+        "metadata": metadata
+    }
 }
 
 // Generate Audio Fingerprint
