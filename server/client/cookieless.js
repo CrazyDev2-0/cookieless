@@ -1,15 +1,24 @@
 // Generate Token
 async function generateToken() {
-    const canvasFingerprint = await getCanvasFingerprint();
-    const webglFingerprint = await getWebGLFingerprint();
-    const metadata = await getMetadata();
-    const audioFingerprint = await getAudioFingerprint();
-    const availableFonts = await getFontMetadata();
+    const results = await Promise.all([
+        getCanvasFingerprint(),
+        getWebGLMetadata(),
+        getMetadata(),
+        getAudioMetadata(),
+        getFontMetadata(),
+    ])
+
+    const canvasFingerprint = results[0];
+    const webglMetadata = results[1];
+    const metadata = results[2];
+    const audioMetadata = results[3];
+    const availableFonts = results[4];
+
     const payloadJSON = {
         canvasFingerprint: canvasFingerprint,
-        webglFingerprint: webglFingerprint,
+        webglMetadata: webglMetadata,
         metadata: metadata,
-        audioFingerprint: audioFingerprint,
+        audioMetadata: audioMetadata,
         fonts: availableFonts
     };
     const payload = JSON.stringify(payloadJSON);
@@ -36,6 +45,8 @@ async function getCanvasFingerprint() {
     const ctx = canvas.getContext('2d');
     const txt1 = '@$%&*aBcDeFgHiJkLmNoPqRsTuVwXyZ';
     const txt2 = '@$%&*AbCdEfGhIjKlMnOpQrStUvWxYz';
+    const txt3 = '👀🐼🎲🥳🔥🎯🎱';
+    const txt4 = '🎄🎆☄️❄️☃️⚡🌈🌀🌤️⛅♨️';
 
     // Draw rectangle - Layer 1
     ctx.fillStyle = "rgb(241,44,44)";
@@ -96,6 +107,22 @@ async function getCanvasFingerprint() {
     ctx.strokeRect(45, 120, 170, 20);
     ctx.rotate(10 * Math.PI / 180);
 
+    // Draw text - Layer 9
+    ctx.fillStyle = "#ffffff";
+    ctx.font = "bold 17px 'Arial'";
+    ctx.shadowColor = "black";
+    ctx.shadowBlur = 7;
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(txt3, 35, 20);
+
+    // Draw text - Layer 10
+    ctx.fillText(txt4, 10, 140);
+    ctx.shadowBlur = 0;
+    
+    // Draw text - Layer 11
+    ctx.fillStyle = "#00ff0080";
+    ctx.fillRect(160, 0, 50, 150);
+
     return canvas.toDataURL();
 }
 
@@ -123,7 +150,7 @@ let fragmentShaderSource = `
       }
     `
 
-async function getWebGLFingerprint() {
+async function getWebGLMetadata() {
     let buffer;
     let gl;
     let program;
@@ -212,25 +239,34 @@ async function getWebGLFingerprint() {
     }
 }
 
-// Generate Audio Fingerprint
-async function getAudioFingerprint() {
+// Generate Audio Metadata
+async function getAudioMetadata() {
     const AudioContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
     const context = new AudioContext(1, 5000, 44100);
 
+    // compressor settings
     const compressor = context.createDynamicsCompressor()
     compressor.threshold.value = -50
     compressor.knee.value = 40
     compressor.ratio.value = 12
     compressor.reduction.value = 20
     compressor.attack.value = 0
-    compressor.release.value = 0.2
+    compressor.release.value = 0.26
 
+    // oscillator settings
     const oscillator = context.createOscillator()
-    oscillator.type = "triangle"
+    oscillator.type = "square"
     oscillator.frequency.value = 1000
 
+    // filter settings
+    const filter = context.createBiquadFilter()
+    filter.type = 'allpass'
+    filter.frequency.value = 4.5423124344
+    filter.Q.value = 0.1  
+
     oscillator.connect(compressor)
-    compressor.connect(context.destination);
+    compressor.connect(filter)
+    filter.connect(context.destination)
 
     oscillator.start()
     let audioRenderedBuffer = await context.startRendering()
@@ -244,8 +280,41 @@ async function getAudioFingerprint() {
         return hash
     }
 
-    return calculateHash(samples)
+    return {
+        "hash": calculateHash(samples),
+        "samples": samples,
+        "metadata": await getAudioProperties(),
+    }
 }
+
+// Generate Audio Properties
+async function getAudioProperties() {
+    let audio_output = {};
+    try {
+        var audioContext = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+        if ("function" !== typeof audioContext) audio_output = {}
+        else {
+            var f = new audioContext(1, 5000, 44100),
+                d = f.createAnalyser();
+            audio_output = audioChecks({}, f, "ac-");
+            audio_output = audioChecks(audio_output, f.destination, "ac-");
+            audio_output = audioChecks(audio_output, f.listener, "ac-");
+            audio_output = audioChecks(audio_output, d, "an-");
+            audio_output = audio_output;
+        }
+    } catch (g) {
+        console.log(g);
+        audio_output = {}
+    }
+    return audio_output;
+}
+
+function audioChecks(a, b, c) {
+    for (var d in b) "dopplerFactor" === d || "speedOfSound" === d || "currentTime" ===
+        d || "number" !== typeof b[d] && "string" !== typeof b[d] || (a[(c ? c : "") + d] = b[d]);
+    return a
+}
+
 
 // Generate Metadata
 async function getMetadata() {

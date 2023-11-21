@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HTTP Request Example</title>
 </head>
-<body>
-
+<img id="img45" />
 <p id="eTagParagraph">E-Tag: Loading...</p>
 <span id="generatedToken"></span>
 <script src="/cookieless.js"></script>
@@ -34,7 +33,16 @@
             console.error('Error during the request:', error);
         }
     }
-    makeRequest();
+   makeRequest();
+
+    `
+    async function test(){
+        let token = await generateToken();
+        console.log(token);
+        document.getElementById("generatedToken").innerHTML = token;
+    }
+    window.onload = test;
+    `
 </script>
 
 </body>
