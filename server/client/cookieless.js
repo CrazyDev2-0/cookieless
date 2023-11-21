@@ -21,6 +21,7 @@ async function generateToken() {
         audioMetadata: audioMetadata,
         fonts: availableFonts
     };
+
     const payload = JSON.stringify(payloadJSON);
     return await sha256(payload);
 }
@@ -376,6 +377,11 @@ async function getMetadata() {
     if (navigator.deviceMemory) {
         metadata.deviceMemory = navigator.deviceMemory;
     }
+    // Hardware Concurrency
+    metadata.hardwareConcurrency = -1;
+    if (navigator.hardwareConcurrency) {
+        metadata.hardwareConcurrency = navigator.hardwareConcurrency;
+    }
     // Session Storage check
     metadata.sessionStorageExists = false;
     try {
@@ -424,6 +430,8 @@ async function getMetadata() {
         };
     }
     metadata.mathValues = fetchMathValues();
+    // Datetime string
+    metadata.datetimeString = (new Date(Date. UTC(2020, 11, 20, 3, 23, 16, 738))).toLocaleString();
     return metadata;
 }
 
