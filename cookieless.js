@@ -13,7 +13,6 @@ async function generateToken() {
         fonts: availableFonts
     };
     const payload = JSON.stringify(payloadJSON);
-    document.getElementById("data").innerText = payload;
     return await sha256(payload);
 }
 
