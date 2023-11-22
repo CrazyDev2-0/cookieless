@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Hotel Booking</title>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Shantell+Sans&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<h1 class="header-title">Hotel Booking 🏩</h1>
+
+<div class="iframe-container">
+    <div class="ribbon ribbon-top-left"><span>IFRAME</span></div>
+    <iframe src="https://cookieless.swiftwave.org"></iframe>
+</div>
+<div class="details-panel">
+    <div>Visitor ID</div>
+    <div><span id="visitor_id"></span></div>
+</div>
+
+<script src="https://server.cookieless.swiftwave.org/js" type="text/javascript"></script>
+<script>
+    var visitor_id = document.getElementById('visitor_id');
+    GenerateVisitorID(10)
+        .then(function (id) {
+            visitor_id.innerHTML = id;
+        })
+        .catch(function (error) {
+            console.log(error);
+        });
+</script>
+</body>
+</html>

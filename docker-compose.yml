@@ -1,23 +1,86 @@
 version: '3.8'
 services:
-  app:
+  cookieless_server:
     build:
-      context: .
+      context: ./cookieless-server
       dockerfile: Dockerfile
-    ports:
-      - "8080:8080"
     depends_on:
       - db
     environment:
-      - SERVER_ENDPOINT=https://61c7-103-135-228-71.ngrok-free.app
+      - SERVER_ENDPOINT=https://server.cookieless.swiftwave.org
       - DB_DSN=host=db user=postgres password=postgres dbname=cookieless_db port=5432 sslmode=disable TimeZone=Asia/Kolkata
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cookieless_server.rule=Host(`server.cookieless.swiftwave.org`)"
+      - "traefik.http.routers.cookieless_server.entrypoints=websecure"
+      - "traefik.http.routers.cookieless_server.tls.certresolver=myresolver"
+      - "traefik.http.services.cookieless_server.loadbalancer.server.port=8080"
   db:
     image: docker.io/bitnami/postgresql:16
     environment:
       - POSTGRESQL_USERNAME=postgres
       - POSTGRESQL_PASSWORD=postgres
       - POSTGRESQL_DATABASE=cookieless_db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready", "-d", "db_prod"]
+      interval: 30s
+      timeout: 60s
+      retries: 5
+      start_period: 80s  
     volumes:
       - postgresql_data:/bitnami/postgresql
+  cookieless_client:
+    build:
+      context: ./cookieless-client
+      dockerfile: Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.cookieless_client.rule=Host(`cookieless.swiftwave.org`)"
+      - "traefik.http.routers.cookieless_client.entrypoints=websecure"
+      - "traefik.http.routers.cookieless_client.tls.certresolver=myresolver"
+      - "traefik.http.services.cookieless_client.loadbalancer.server.port=80"
+  hotel_booking:
+    build:
+      context: ./demo/hotel_booking
+      dockerfile: Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hotel_booking.rule=Host(`hotelbooking.swiftwave.org`)"
+      - "traefik.http.routers.hotel_booking.entrypoints=websecure"
+      - "traefik.http.routers.hotel_booking.tls.certresolver=myresolver"
+      - "traefik.http.services.hotel_booking.loadbalancer.server.port=80"
+  travel_booking:
+    build:
+      context: ./demo/travel_booking
+      dockerfile: Dockerfile
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.travel_booking.rule=Host(`travelbooking.swiftwave.org`)"
+      - "traefik.http.routers.travel_booking.entrypoints=websecure"
+      - "traefik.http.routers.travel_booking.tls.certresolver=myresolver"
+      - "traefik.http.services.travel_booking.loadbalancer.server.port=80"
+  # Traefik reverse proxy 
+  traefik:
+    image: "traefik:v2.10"
+    container_name: "traefik"
+    command:
+      #- "--log.level=DEBUG"
+      - "--api.insecure=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedbydefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.websecure.address=:443"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge=true"
+      - "--certificatesresolvers.myresolver.acme.httpchallenge.entrypoint=web"
+      #- "--certificatesresolvers.myresolver.acme.caserver=https://acme-staging-v02.api.letsencrypt.org/directory"
+      - "--certificatesresolvers.myresolver.acme.email=testabc@gmail.com"
+      - "--certificatesresolvers.myresolver.acme.storage=/letsencrypt/acme.json"
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - "./letsencrypt:/letsencrypt"
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
 volumes:
   postgresql_data:

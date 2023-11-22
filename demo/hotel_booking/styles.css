@@ -1,0 +1,131 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+:root {
+    --bg-color: #212529;
+    --text-color: #599F57;
+    --current-vistor-border-color: #00f7ff;
+}
+
+body {
+    width: 100vw !important;
+    font-family: 'Shantell Sans', cursive;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    padding-top: 40px;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    overflow-x: hidden;
+    /*overflow: hidden !important;*/
+}
+
+.header-title {
+    color: var(--text-color);
+    font-size: 3.5rem;
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+}
+
+.iframe-container {
+    margin-top: 50px;
+    display: block;
+    position: relative;
+}
+
+.iframe-container iframe {
+    height: 50vh;
+    width: 30vw;
+    border: 4px solid var(--text-color);
+    border-radius: 10px;
+}
+
+.details-panel {
+    margin-top: 20px;
+    font-size: 1.5rem;
+
+    color: white;
+    border: 4px solid var(--current-vistor-border-color);
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    row-gap: 20px;
+    padding: 30px;
+    text-align: center;
+}
+
+@media screen and (max-width: 600px) {
+    .header-title {
+        font-size: 2rem;
+    }
+
+    .iframe-container iframe {
+        width: 90vw;
+        height: 75vh;
+    }
+}
+
+/* Ribbon CSS */
+.ribbon {
+    width: 150px;
+    height: 150px;
+    overflow: hidden;
+    position: absolute;
+}
+
+.ribbon::before,
+.ribbon::after {
+    position: absolute;
+    z-index: -1;
+    content: '';
+    display: block;
+    border: 5px solid #2980b9;
+}
+
+.ribbon span {
+    position: absolute;
+    display: block;
+    width: 225px;
+    padding: 15px 0;
+    background-color: #3498db;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, .1);
+    color: #fff;
+    font: 700 18px/1 'Shantell Sans', sans-serif;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, .2);
+    text-transform: uppercase;
+    text-align: center;
+}
+
+.ribbon-top-left {
+    top: -10px;
+    left: -10px;
+}
+
+.ribbon-top-left::before,
+.ribbon-top-left::after {
+    border-top-color: transparent;
+    border-left-color: transparent;
+}
+
+.ribbon-top-left::before {
+    top: 0;
+    right: 0;
+}
+
+.ribbon-top-left::after {
+    bottom: 0;
+    left: 0;
+}
+
+.ribbon-top-left span {
+    right: -25px;
+    top: 30px;
+    transform: rotate(-45deg);
+}
