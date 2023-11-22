@@ -9,6 +9,7 @@ services:
     depends_on:
       - db
     environment:
+      - SERVER_ENDPOINT=https://61c7-103-135-228-71.ngrok-free.app
       - DB_DSN=host=db user=postgres password=postgres dbname=cookieless_db port=5432 sslmode=disable TimeZone=Asia/Kolkata
   db:
     image: docker.io/bitnami/postgresql:16

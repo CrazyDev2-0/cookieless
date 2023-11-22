@@ -1,6 +1,7 @@
 package main
 
 import (
+	_ "embed"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 	"gorm.io/driver/postgres"
@@ -8,8 +9,12 @@ import (
 	"log"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
+
+//go:embed cookieless.js
+var cookielessJs string
 
 func main() {
 	dsn := os.Getenv("DB_DSN")
@@ -38,6 +43,16 @@ func main() {
 		ExposeHeaders: []string{"ETag"},
 		AllowHeaders:  []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
+
+	// Prepare the cookieless js
+	serverEndpoint := os.Getenv("SERVER_ENDPOINT")
+	if serverEndpoint == "" {
+		panic("SERVER_ENDPOINT is not provided")
+	}
+
+	cookielessJs = strings.Replace(cookielessJs, "{SERVER_ENDPOINT}", serverEndpoint, -1)
+
+	// Endpoints
 
 	// etag assign api
 	e.GET("/", func(c echo.Context) error {
@@ -99,6 +114,19 @@ func main() {
 			response.Flush()
 			return nil
 		}
+	})
+
+	// send cookieless js
+	e.GET("/js", func(c echo.Context) error {
+		response := c.Response()
+		response.Header().Set("Content-Type", "application/javascript")
+		_, err := response.Write([]byte(cookielessJs))
+		if err != nil {
+			return err
+		}
+		response.Status = 200
+		response.Flush()
+		return nil
 	})
 
 	e.Logger.Fatal(e.Start(":8080"))
