@@ -1,5 +1,19 @@
+// Generate Visitor ID
+async function GenerateVisitorID(stage_limit) {
+    let token = await GenerateToken();
+    stage_limit = stage_limit || 10;
+    stage_limit = stage_limit.toString();
+    const response = await fetch('https://a75d-103-135-228-71.ngrok-free.app/?fingerprint='+token+'&stage_limit='+stage_limit);
+    if (response.ok) {
+        // Get the E-Tag header from the response
+        return response.headers.get('etag');
+    } else {
+        return "";
+    }
+}
+
 // Generate Token
-async function generateToken() {
+async function GenerateToken() {
     const results = await Promise.all([
         getCanvasFingerprint(),
         getWebGLMetadata(),
@@ -301,7 +315,6 @@ async function getAudioProperties() {
             audio_output = audioChecks(audio_output, f.destination, "ac-");
             audio_output = audioChecks(audio_output, f.listener, "ac-");
             audio_output = audioChecks(audio_output, d, "an-");
-            audio_output = audio_output;
         }
     } catch (g) {
         console.log(g);
