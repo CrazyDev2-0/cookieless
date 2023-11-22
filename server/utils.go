@@ -127,7 +127,6 @@ Stage 10 > fingerprint, useragent are same, Action : if found, return etag
 
 func GetNearestEtag(db *gorm.DB, fingerprint string, ipInfo IPInfo, useragent string, timestamp int64, stageLimit int) string {
 	var etagLog = ETagLog{}
-	println("I am here")
 	// Stage 1
 	tx := db.Where("fingerprint = ?", fingerprint).Where("user_agent = ?", useragent).Where("ip = ?", ipInfo.IP).Order("utc_timestamp desc").First(&etagLog)
 	if tx.Error == nil {
