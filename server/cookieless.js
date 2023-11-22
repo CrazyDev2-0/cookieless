@@ -1,9 +1,9 @@
 // Generate Visitor ID
-async function GenerateVisitorID(stage_limit) {
+async function GenerateVisitorID(server_domain, stage_limit) {
     let token = await GenerateToken();
     stage_limit = stage_limit || 10;
     stage_limit = stage_limit.toString();
-    const response = await fetch('https://a75d-103-135-228-71.ngrok-free.app/?fingerprint='+token+'&stage_limit='+stage_limit);
+    const response = await fetch('https://'+server_domain+'/?fingerprint='+token+'&stage_limit='+stage_limit);
     if (response.ok) {
         // Get the E-Tag header from the response
         return response.headers.get('etag');

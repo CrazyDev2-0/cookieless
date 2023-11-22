@@ -1,19 +1,23 @@
 package main
 
 import (
-	"errors"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
-	"gorm.io/driver/sqlite"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"log"
+	"os"
 	"strconv"
 	"time"
 )
 
 func main() {
+	dsn := os.Getenv("DB_DSN")
+	if dsn == "" {
+		panic("DB_DSN is not provided")
+	}
 	// Gorm instance
-	db, err := gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic("failed to connect database")
 	}
@@ -42,7 +46,7 @@ func main() {
 		// Fingerprint
 		fingerprint := c.QueryParam("fingerprint")
 		if fingerprint == "" {
-			return errors.New("fingerprint is not provided")
+			return c.String(400, "fingerprint is not provided")
 		}
 		// Fetch user agent
 		userAgent := c.Request().UserAgent()
@@ -65,7 +69,7 @@ func main() {
 			// stage limit
 			stageLimit := c.QueryParam("stage_limit")
 			if stageLimit == "" {
-				return errors.New("stage_limit is not provided")
+				return c.String(400, "stage_limit is not provided")
 			}
 			// stage limit int
 			stageLimitInt, _ := strconv.Atoi(stageLimit)
