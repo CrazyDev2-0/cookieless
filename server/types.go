@@ -5,7 +5,7 @@ type IPInfo struct {
 	ContinentCode string `json:"continent_code"`
 	CountryCode   string `json:"country_code"`
 	RegionCode    string `json:"region_code"`
-	ZIPCode       string `json:"zip_code"`
+	ZipCode       string `json:"zip_code"`
 	ASNAME        string `json:"asname"`
 	IsMobile      bool   `json:"is_mobile"`
 }

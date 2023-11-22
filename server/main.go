@@ -7,6 +7,8 @@ import (
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 	"log"
+	"strconv"
+	"time"
 )
 
 func main() {
@@ -58,10 +60,27 @@ func main() {
 			response.Flush()
 			return nil
 		} else {
-			etag := GenerateETag()
+			var etag string
 
-			// TODO: try to find old etag and reassociate
+			// stage limit
+			stageLimit := c.QueryParam("stage_limit")
+			if stageLimit == "" {
+				return errors.New("stage_limit is not provided")
+			}
+			// stage limit int
+			stageLimitInt, _ := strconv.Atoi(stageLimit)
+			// try to find etag
 
+			// useragent system details
+			systemDetailsUserAgent := FetchSystemInfoFromUserAgent(userAgent)
+
+			// fetch ipinfo
+			ipInfo, _ := FetchIPInfo(db, ip)
+			etag = GetNearestEtag(db, fingerprint, *ipInfo, systemDetailsUserAgent, time.Now().UTC().Unix(), stageLimitInt)
+			if etag == "" {
+				etag = GenerateETag()
+			}
+			// log entry
 			entryStatus := ETagLogEntry(db, etag, ip, userAgent, fingerprint)
 			if entryStatus == false {
 				log.Println("ETag log entry failed")
@@ -77,9 +96,6 @@ func main() {
 			return nil
 		}
 	})
-
-	// GET /related/:etag?confidence=0.5
-	// TODO: fetch possible etags from database
 
 	e.Logger.Fatal(e.Start(":8080"))
 }
