@@ -3,4 +3,4 @@
 ![4](https://github.com/CrazyDev2-0/cookieless/assets/57363826/0d7465c0-ca57-4103-995c-ab3d18bf6164)
 ![5](https://github.com/CrazyDev2-0/cookieless/assets/57363826/264712fc-71bd-4e02-ad23-38eea44b7b35)
 ![7](https://github.com/CrazyDev2-0/cookieless/assets/57363826/be8d31b7-0507-4177-8de5-658090d084e0)
-![8](https://github.com/CrazyDev2-0/cookieless/assets/57363826/d7a14b83-fb02-44e0-8564-105516f474ae)
+![ppt (1)](https://github.com/CrazyDev2-0/cookieless/assets/57363826/2f234b82-070d-424f-a65e-73c4c8c07ce1)
