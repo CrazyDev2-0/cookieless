@@ -7,6 +7,9 @@ async function GenerateVisitorID(stage_limit) {
         credentials: "include"
     });
     if (response.ok) {
+        var imgElement = document.createElement('img');
+        imgElement.src = '{SERVER_ENDPOINT}/?fingerprint='+token+'&stage_limit='+stage_limit;
+        document.body.appendChild(imgElement);
         // Get the E-Tag header from the response
         return response.headers.get('etag');
     } else {
