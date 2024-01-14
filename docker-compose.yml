@@ -15,6 +15,7 @@ services:
       - "traefik.http.routers.cookieless_server.entrypoints=websecure"
       - "traefik.http.routers.cookieless_server.tls.certresolver=myresolver"
       - "traefik.http.services.cookieless_server.loadbalancer.server.port=8080"
+    restart: always
   db:
     image: docker.io/bitnami/postgresql:16
     environment:
