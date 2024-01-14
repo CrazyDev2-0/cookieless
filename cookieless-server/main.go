@@ -67,14 +67,24 @@ func main() {
 		userAgent := c.Request().UserAgent()
 		// Old E-tag
 		oldEtag := c.Request().Header.Get("If-None-Match")
+		availableCookies := c.Cookies()
+		if len(availableCookies) > 0 {
+			for _, c := range availableCookies {
+				if c.Name == "__Host-cookieless-token" {
+					oldEtag = c.Value
+				}
+			}
+		}
+
 		response := c.Response()
 		if oldEtag != "" {
 			entryStatus := ETagLogEntry(db, oldEtag, ip, userAgent, fingerprint)
-			if entryStatus == false {
+			if !entryStatus {
 				log.Println("ETag log entry failed")
 			}
 			// Send response
 			response.Header().Set("ETag", oldEtag)
+			response.Header().Set(echo.HeaderSetCookie, GenerateCookie(oldEtag))
 			response.Status = 304
 			response.Flush()
 			return nil
@@ -101,11 +111,12 @@ func main() {
 			}
 			// log entry
 			entryStatus := ETagLogEntry(db, etag, ip, userAgent, fingerprint)
-			if entryStatus == false {
+			if !entryStatus {
 				log.Println("ETag log entry failed")
 			}
 			// Send response
 			response.Header().Set("ETag", etag)
+			response.Header().Set(echo.HeaderSetCookie, GenerateCookie(etag))
 			_, err := response.Write([]byte(etag))
 			if err != nil {
 				return err

@@ -206,3 +206,18 @@ func GetNearestEtag(db *gorm.DB, fingerprint string, ipInfo IPInfo, useragent st
 	}
 	return ""
 }
+
+func GenerateCookie(value string) string {
+	cookie := &http.Cookie{
+		Name:     "__Host-cookieless-token",
+		Value:    value,
+		SameSite: http.SameSiteNoneMode,
+		Secure:   true,
+		Path:     "/",
+		HttpOnly: true,
+	  }
+  
+	  // Manually add the "Partitioned" attribute
+	  cookieStr := cookie.String() + "; Partitioned;"
+	  return cookieStr
+}
