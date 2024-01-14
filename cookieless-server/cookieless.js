@@ -3,9 +3,7 @@ async function GenerateVisitorID(stage_limit) {
     let token = await GenerateToken();
     stage_limit = stage_limit || 10;
     stage_limit = stage_limit.toString();
-    const response = await fetch('{SERVER_ENDPOINT}/?fingerprint='+token+'&stage_limit='+stage_limit, {
-        credentials: "include"
-    });
+    const response = await fetch('{SERVER_ENDPOINT}/?fingerprint='+token+'&stage_limit='+stage_limit);
     if (response.ok) {
         var imgElement = document.createElement('img');
         imgElement.src = '{SERVER_ENDPOINT}/?fingerprint='+token+'&stage_limit='+stage_limit;
