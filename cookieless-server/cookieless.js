@@ -1,27 +1,27 @@
 // Generate Visitor ID
 async function GenerateVisitorID(stage_limit) {
-    let token = await GenerateToken();
+    let fingerprint = await GenerateToken();
     stage_limit = stage_limit || 10;
     stage_limit = stage_limit.toString();
-    const response = await fetch('{SERVER_ENDPOINT}/?fingerprint='+token+'&stage_limit='+stage_limit);
+    const response = await fetch('{SERVER_ENDPOINT}/?fingerprint='+fingerprint+'&stage_limit='+stage_limit);
     if (response.ok) {
         // if response is blank and didn't contain uuid length text, then return etag from header
-        let data = await response.text();
-        if(data.length != 36) {
+        let token = await response.text();
+        if(token.length != 36) {
             // Get the E-Tag header from the response
             return response.headers.get('etag');
         } else {
             const imgId = generateRandomString(20);
             var imgElement = document.createElement('img');
             imgElement.id = imgId;
-            imgElement.src = `{SERVER_ENDPOINT}/?fingerprint=${fingerprint}&stage_limit=${stage_limit}&token=${data}`;
+            imgElement.src = `{SERVER_ENDPOINT}/?fingerprint=${fingerprint}&stage_limit=${stage_limit}&token=${token}`;
             document.body.appendChild(imgElement);
 
             let attempts = 0;
             // start polling /result/<token_from_response> with gap 500ms
             for (let i = 0; i < 30; i++) {
                 await new Promise(r => setTimeout(r, 500));
-                const response = await fetch(`{SERVER_ENDPOINT}/result/${data}`);
+                const response = await fetch(`{SERVER_ENDPOINT}/result/${token}`);
                 if (response.ok) {
                     const result = await response.text();
                     if (result.length == 36) {
