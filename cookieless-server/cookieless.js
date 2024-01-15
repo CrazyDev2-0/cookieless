@@ -1,15 +1,40 @@
 // Generate Visitor ID
 async function GenerateVisitorID(stage_limit) {
-    let token = await GenerateToken();
+    let fingerprint = await GenerateToken();
     stage_limit = stage_limit || 10;
     stage_limit = stage_limit.toString();
-    const response = await fetch('{SERVER_ENDPOINT}/?fingerprint='+token+'&stage_limit='+stage_limit);
+    const response = await fetch('{SERVER_ENDPOINT}/?fingerprint='+fingerprint+'&stage_limit='+stage_limit);
     if (response.ok) {
-        var imgElement = document.createElement('img');
-        imgElement.src = '{SERVER_ENDPOINT}/?fingerprint='+token+'&stage_limit='+stage_limit;
-        document.body.appendChild(imgElement);
-        // Get the E-Tag header from the response
-        return response.headers.get('etag');
+        // if response is blank and didn't contain uuid length text, then return etag from header
+        let token = await response.text();
+        if(token.length != 36) {
+            // Get the E-Tag header from the response
+            return response.headers.get('etag');
+        } else {
+            const imgId = generateRandomString(20);
+            var imgElement = document.createElement('img');
+            imgElement.id = imgId;
+            imgElement.src = `{SERVER_ENDPOINT}/?fingerprint=${fingerprint}&stage_limit=${stage_limit}&token=${token}`;
+            document.body.appendChild(imgElement);
+
+            let attempts = 0;
+            // start polling /result/<token_from_response> with gap 500ms
+            for (let i = 0; i < 30; i++) {
+                await new Promise(r => setTimeout(r, 500));
+                const response = await fetch(`{SERVER_ENDPOINT}/result/${token}`);
+                if (response.ok) {
+                    const result = await response.text();
+                    if (result.length == 36) {
+                        // fetch element by id and remove it
+                        let element = document.getElementById(imgId);
+                        if (element) element.parentNode.removeChild(element);
+                        return result;
+                    }
+                }
+                attempts++;
+            }
+            return "";
+        }
     } else {
         return "";
     }
@@ -543,4 +568,15 @@ async function getFontMetadata() {
     const res = baseFonts.filter(detect);
     body.removeChild(h);
     return res;
+}
+
+// Utility function to generate random string
+function generateRandomString(length) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
+        result += characters.charAt(Math.floor(Math.random() * charactersLength));
+    }
+    return result;
 }
