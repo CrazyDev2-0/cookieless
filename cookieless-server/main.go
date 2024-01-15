@@ -35,6 +35,8 @@ func main() {
 		panic("failed to migrate database")
 	}
 
+	verificationRequests := make(map[string]string, 100) // map[random_token]response_token(same as e-tag)
+
 	// Echo instance
 	e := echo.New()
 	e.IPExtractor = echo.ExtractIPFromXFFHeader()
@@ -76,6 +78,14 @@ func main() {
 			}
 		}
 
+		// check if type is image
+		isImage := false
+		if strings.Contains(c.Request().Header.Get("Accept"), "image") {
+			isImage = true
+		}
+		// read token from query
+		token := c.QueryParam("token")
+
 		response := c.Response()
 		if oldEtag != "" {
 			entryStatus := ETagLogEntry(db, oldEtag, ip, userAgent, fingerprint)
@@ -86,9 +96,23 @@ func main() {
 			response.Header().Set("ETag", oldEtag)
 			response.Header().Set(echo.HeaderSetCookie, GenerateCookie(oldEtag))
 			response.Status = 304
+			response.Writer.Write([]byte(""))
 			response.Flush()
+			// update result in database
+			if isImage {
+				if _, ok := verificationRequests[token]; ok {
+					verificationRequests[token] = oldEtag
+				}
+			}
 			return nil
 		} else {
+			if !isImage {
+				// generate a random token and send back
+				randomToken := GenerateRandomToken()
+				verificationRequests[randomToken] = ""
+				return c.String(200, randomToken)
+			}
+
 			var etag string
 
 			// stage limit
@@ -122,9 +146,31 @@ func main() {
 				return err
 			}
 			response.Status = 200
+			response.Writer.Write([]byte(""))
 			response.Flush()
+			if isImage {
+				if _, ok := verificationRequests[token]; ok {
+					verificationRequests[token] = etag
+				}
+			}
 			return nil
 		}
+	})
+
+	// GET /result/:token - get result of token
+	e.GET("/result/:token", func(c echo.Context) error {
+		token := c.Param("token")
+		if token == "" {
+			return c.String(400, "token is not provided")
+		}
+		if _, ok := verificationRequests[token]; ok {
+			d := verificationRequests[token]
+			if d != "" {
+				delete(verificationRequests, token)
+				return c.String(200, d)
+			}
+		}
+		return c.String(404, "token not found")
 	})
 
 	// send cookieless js

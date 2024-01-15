@@ -16,6 +16,10 @@ func GenerateETag() string {
 	return uuid.NewString()
 }
 
+func GenerateRandomToken() string {
+	return uuid.NewString()
+}
+
 func IsExistIPInfo(db *gorm.DB, ip string) bool {
 	var ipInfo IPInfo
 	tx := db.First(&ipInfo, "ip = ?", ip)
