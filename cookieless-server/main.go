@@ -2,15 +2,17 @@ package main
 
 import (
 	_ "embed"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
-	"gorm.io/driver/postgres"
-	"gorm.io/gorm"
+	"encoding/base64"
 	"log"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 //go:embed cookieless.js
@@ -96,7 +98,18 @@ func main() {
 			response.Header().Set("ETag", oldEtag)
 			response.Header().Set(echo.HeaderSetCookie, GenerateCookie(oldEtag))
 			response.Status = 304
-			response.Writer.Write([]byte(""))
+			if isImage {
+				// Create a buffer for a blank PNG
+				blankPngBase64 := "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAFUlEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+				response.Header().Set("Content-Type", "image/png")
+				blankPngBuffer, err := base64.StdEncoding.DecodeString(blankPngBase64)
+				if err != nil {
+					return err
+				}
+				response.Writer.Write(blankPngBuffer)
+			} else {
+				response.Writer.Write([]byte(""))
+			}
 			response.Flush()
 			// update result in database
 			if isImage {
@@ -146,7 +159,19 @@ func main() {
 				return err
 			}
 			response.Status = 200
-			response.Writer.Write([]byte(""))
+			if isImage {
+				// Create a buffer for a blank PNG
+				blankPngBase64 := "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAFUlEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
+				response.Header().Set("Content-Type", "image/png")
+				blankPngBuffer, err := base64.StdEncoding.DecodeString(blankPngBase64)
+				if err != nil {
+					return err
+				}
+				response.Writer.Write(blankPngBuffer)
+			} else {
+				response.Writer.Write([]byte(""))
+			}
+
 			response.Flush()
 			if isImage {
 				if _, ok := verificationRequests[token]; ok {
