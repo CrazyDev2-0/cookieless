@@ -3,6 +3,7 @@ package main
 import (
 	_ "embed"
 	"encoding/base64"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -71,11 +72,15 @@ func main() {
 		userAgent := c.Request().UserAgent()
 		// Old E-tag
 		oldEtag := c.Request().Header.Get("If-None-Match")
+		fmt.Println("old etag from header > ", oldEtag)
 		availableCookies := c.Cookies()
 		if len(availableCookies) > 0 {
 			for _, c := range availableCookies {
 				if c.Name == "__Host-cookieless-token" {
-					oldEtag = c.Value
+					if c.Value != "" {
+						oldEtag = c.Value
+						fmt.Println("old etag from cookie > ", oldEtag)
+					}
 				}
 			}
 		}
