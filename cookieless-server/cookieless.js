@@ -7,7 +7,7 @@ async function GenerateVisitorID(stage_limit) {
     if (response.ok) {
         // if response is blank and didn't contain uuid length text, then return etag from header
         let data = await response.text();
-        if(data.length() != 36) {
+        if(data.length != 36) {
             // Get the E-Tag header from the response
             return response.headers.get('etag');
         } else {
@@ -24,7 +24,7 @@ async function GenerateVisitorID(stage_limit) {
                 const response = await fetch(`{SERVER_ENDPOINT}/result/${data}`);
                 if (response.ok) {
                     const result = await response.text();
-                    if (result.length() == 36) {
+                    if (result.length == 36) {
                         // fetch element by id and remove it
                         let element = document.getElementById(imgId);
                         if (element) element.parentNode.removeChild(element);
