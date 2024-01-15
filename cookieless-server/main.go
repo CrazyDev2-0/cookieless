@@ -3,7 +3,6 @@ package main
 import (
 	_ "embed"
 	"encoding/base64"
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -45,7 +44,7 @@ func main() {
 	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:  []string{"*"},
-		ExposeHeaders: []string{"userToken"},
+		ExposeHeaders: []string{},
 		AllowHeaders:  []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
@@ -79,7 +78,6 @@ func main() {
 				if c.Name == "__Host-cookieless-token" {
 					if c.Value != "" {
 						userToken = c.Value
-						fmt.Println("old userToken from cookie > ", userToken)
 					}
 				}
 			}
