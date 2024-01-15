@@ -33,19 +33,19 @@ func main() {
 	if err != nil {
 		panic("failed to migrate database")
 	}
-	err = db.AutoMigrate(&ETagLog{})
+	err = db.AutoMigrate(&UserTokenLog{})
 	if err != nil {
 		panic("failed to migrate database")
 	}
 
-	verificationRequests := make(map[string]string, 100) // map[random_token]response_token(same as e-tag)
+	verificationRequests := make(map[string]string, 100) // map[random_token]response_token(same as userToken)
 
 	// Echo instance
 	e := echo.New()
 	e.IPExtractor = echo.ExtractIPFromXFFHeader()
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
 		AllowOrigins:  []string{"*"},
-		ExposeHeaders: []string{"ETag"},
+		ExposeHeaders: []string{"userToken"},
 		AllowHeaders:  []string{echo.HeaderOrigin, echo.HeaderContentType, echo.HeaderAccept},
 	}))
 
@@ -59,7 +59,7 @@ func main() {
 
 	// Endpoints
 
-	// etag assign api
+	// userToken assign api
 	e.GET("/", func(c echo.Context) error {
 		// fetch ip
 		ip := c.RealIP()
@@ -70,16 +70,16 @@ func main() {
 		}
 		// Fetch user agent
 		userAgent := c.Request().UserAgent()
-		// Old E-tag
-		oldEtag := c.Request().Header.Get("If-None-Match")
-		fmt.Println("old etag from header > ", oldEtag)
+
+		// User token
+		userToken := ""
 		availableCookies := c.Cookies()
 		if len(availableCookies) > 0 {
 			for _, c := range availableCookies {
 				if c.Name == "__Host-cookieless-token" {
 					if c.Value != "" {
-						oldEtag = c.Value
-						fmt.Println("old etag from cookie > ", oldEtag)
+						userToken = c.Value
+						fmt.Println("old userToken from cookie > ", userToken)
 					}
 				}
 			}
@@ -94,14 +94,13 @@ func main() {
 		token := c.QueryParam("token")
 
 		response := c.Response()
-		if oldEtag != "" {
-			entryStatus := ETagLogEntry(db, oldEtag, ip, userAgent, fingerprint)
+		if userToken != "" {
+			entryStatus := LogEntry(db, userToken, ip, userAgent, fingerprint)
 			if !entryStatus {
-				log.Println("ETag log entry failed")
+				log.Println("userToken log entry failed")
 			}
 			// Send response
-			response.Header().Set("ETag", oldEtag)
-			response.Header().Set(echo.HeaderSetCookie, GenerateCookie(oldEtag))
+			response.Header().Set(echo.HeaderSetCookie, GenerateCookie(userToken))
 			response.Status = 304
 			if isImage {
 				// Create a buffer for a blank PNG
@@ -119,7 +118,7 @@ func main() {
 			// update result in database
 			if isImage {
 				if _, ok := verificationRequests[token]; ok {
-					verificationRequests[token] = oldEtag
+					verificationRequests[token] = userToken
 				}
 			}
 			return nil
@@ -131,7 +130,7 @@ func main() {
 				return c.String(200, randomToken)
 			}
 
-			var etag string
+			var userToken string
 
 			// stage limit
 			stageLimit := c.QueryParam("stage_limit")
@@ -140,26 +139,26 @@ func main() {
 			}
 			// stage limit int
 			stageLimitInt, _ := strconv.Atoi(stageLimit)
-			// try to find etag
+			// try to find userToken
 
 			// useragent system details
 			systemDetailsUserAgent := FetchSystemInfoFromUserAgent(userAgent)
 
 			// fetch ipinfo
 			ipInfo, _ := FetchIPInfo(db, ip)
-			etag = GetNearestEtag(db, fingerprint, *ipInfo, systemDetailsUserAgent, time.Now().UTC().Unix(), stageLimitInt)
-			if etag == "" {
-				etag = GenerateETag()
+			userToken = GetNearestUserToken(db, fingerprint, *ipInfo, systemDetailsUserAgent, time.Now().UTC().Unix(), stageLimitInt)
+			if userToken == "" {
+				userToken = GenerateUserToken()
 			}
 			// log entry
-			entryStatus := ETagLogEntry(db, etag, ip, userAgent, fingerprint)
+			entryStatus := LogEntry(db, userToken, ip, userAgent, fingerprint)
 			if !entryStatus {
-				log.Println("ETag log entry failed")
+				log.Println("userToken log entry failed")
 			}
 			// Send response
-			response.Header().Set("ETag", etag)
-			response.Header().Set(echo.HeaderSetCookie, GenerateCookie(etag))
-			_, err := response.Write([]byte(etag))
+			response.Header().Set("userToken", userToken)
+			response.Header().Set(echo.HeaderSetCookie, GenerateCookie(userToken))
+			_, err := response.Write([]byte(userToken))
 			if err != nil {
 				return err
 			}
@@ -180,7 +179,7 @@ func main() {
 			response.Flush()
 			if isImage {
 				if _, ok := verificationRequests[token]; ok {
-					verificationRequests[token] = etag
+					verificationRequests[token] = userToken
 				}
 			}
 			return nil

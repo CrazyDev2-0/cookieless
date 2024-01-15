@@ -10,9 +10,9 @@ type IPInfo struct {
 	IsMobile      bool   `json:"is_mobile"`
 }
 
-type ETagLog struct {
+type UserTokenLog struct {
 	ID           int64  `json:"id" gorm:"primaryKey"`
-	Etag         string `json:"etag"`
+	UserToken    string `json:"user_token"`
 	IP           string `json:"ip"`
 	UserAgent    string `json:"user_agent"`
 	Fingerprint  string `json:"fingerprint"`
