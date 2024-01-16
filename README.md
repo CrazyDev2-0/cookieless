@@ -1,12 +1,12 @@
 # Cookieless
 
-![2](https://github.com/CrazyDev2-0/cookieless/assets/57363826/95ede95c-f313-4e26-9643-c47515c0f099)
+![2](https://github.com/CrazyDev2-0/cookieless/assets/57363826/f84cfab2-a5eb-4259-a811-76d8d38c2584)
 
 ## Features Implemented:
 ![3](https://github.com/CrazyDev2-0/cookieless/assets/57363826/2e52d4ed-9239-4c3e-b663-be28d9b1d76d)
 
 ## Cookieless Architecture Overview:
-![4](https://github.com/CrazyDev2-0/cookieless/assets/57363826/0d7465c0-ca57-4103-995c-ab3d18bf6164)
+![4](https://github.com/CrazyDev2-0/cookieless/assets/57363826/192bfb56-5efe-4c5e-ada7-0690ad5c2ee3)
 ![5](https://github.com/CrazyDev2-0/cookieless/assets/57363826/264712fc-71bd-4e02-ad23-38eea44b7b35)
 
 ## Visitor ID Generation Algorithm:
