@@ -26,7 +26,7 @@
 docker compose up
 ```
 
-- We have already deployed the apps, can be accessed here:
-- [Main Site](https://cookieless.swiftwave.org)
-- [Hotel Booking](https://hotelbooking.swiftwave.org)
-- [Travel Booking](https://travelbooking.swiftwave.org)
+- We have already deployed the apps, can be accessed here: (Sorry, we have removed the deployments, tryout locally)
+- [Main Site](https://swiftwave.org)
+- [Hotel Booking](https://swiftwave.org)
+- [Travel Booking](https://swiftwave.org)
